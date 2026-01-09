@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  sonarr-genre-tagger:
+    build: .
+    image: sonarrgenretagger:latest
+    container_name: sonarr-genre-tagger
+    env_file: .env
+    volumes:
+      - /config:/config
+    restart: "no"

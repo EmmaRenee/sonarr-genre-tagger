@@ -6,7 +6,14 @@ from pyarr.sonarr import SonarrAPI
 
 class Sonarr(object):
 	def __init__(self, url: str, apikey: str):
-		self.api = SonarrAPI(host_url = url.replace("/api/v3", ""), api_key = apikey)
+		# Normalize provided URL: strip any trailing /api or /api/v3 so
+		# pyarr can append its own API path correctly.
+		host = url.rstrip('/')
+		if host.endswith('/api/v3'):
+			host = host[: -len('/api/v3')]
+		elif host.endswith('/api'):
+			host = host[: -len('/api')]
+		self.api = SonarrAPI(host_url=host, api_key=apikey)
 		# self.api_key = apikey
 		# self.host_url = url
 		# self.api_suffix = "api/v3"
@@ -43,5 +50,8 @@ class Sonarr(object):
 		return self.api.get_series()
 
 	def get_tags(self):
-		# return self.sonarr_api_request(f"{self.host_url}/api/v3/tag")
+		# pyarr historically exposed either `get_tags` or `get_tag` depending
+		# on version; prefer `get_tags` if available, otherwise fall back.
+		if hasattr(self.api, 'get_tags'):
+			return self.api.get_tags()
 		return self.api.get_tag()
